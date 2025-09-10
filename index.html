@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor Aleatorio de Street View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Script para lanzar confeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo personalizado para la barra de desplazamiento en el área de texto */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #4b5563; /* gray-600 */
+            border-radius: 20px;
+        }
+
+        /* Clases para controlar el zoom del iframe */
+        .zoomed-view {
+            top: -60px;
+            height: calc(100% + 60px);
+        }
+        .unzoomed-view {
+            top: 0;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-4xl mx-auto space-y-8">
+        <!-- Encabezado -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold tracking-tight text-cyan-400 sm:text-5xl">Visor Aleatorio de Street View</h1>
+            <p class="mt-4 text-lg text-gray-400">Pega una lista de URLs de inserción de Street View y explora una al azar.</p>
+        </div>
+
+        <!-- Sección de Entrada Colapsable -->
+        <div id="inputFormContainer" class="bg-gray-800 rounded-2xl shadow-lg border border-gray-700">
+            <div id="formHeader" class="flex items-center justify-between p-6 cursor-pointer select-none">
+                <h2 class="text-xl font-bold text-gray-300">Ajustes y Carga de Datos</h2>
+                <div id="toggleArrow" class="transform transition-transform duration-300 rotate-180">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-gray-400">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <div id="formContent" class="p-6 pt-0 space-y-4 hidden">
+                <label for="urls" class="block text-sm font-medium text-gray-300">Lista de URLs y Nombres (formato: URL, Nombre)</label>
+                <textarea id="urls" rows="8" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-y" placeholder="Ejemplo:&#10;https://www.google.com/maps/embed?pb=...,Parque Central&#10;https://www.google.com/maps/embed?pb=...,Avenida de los Héroes"></textarea>
+                
+                <!-- Instrucciones -->
+                <div class="text-xs text-gray-400 bg-gray-900/50 p-3 rounded-md">
+                    <p class="font-semibold mb-1 text-gray-300">Cómo obtener las URLs correctas:</p>
+                    <ol class="list-decimal list-inside space-y-1">
+                        <li>En Google Maps Street View, haz clic en 'Compartir' (o el menú de 3 puntos ⋮).</li>
+                        <li>Selecciona la pestaña 'Insertar un mapa'.</li>
+                        <li>Copia el enlace <strong>src="..."</strong> o la etiqueta <code>&lt;iframe&gt;</code> completa.</li>
+                        <li>Pega cada uno en una nueva línea en el campo de arriba, seguido de una coma y un nombre.</li>
+                    </ol>
+                </div>
+            </div>
+            <button id="randomButton" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-cyan-500/50 shadow-lg mt-4">
+                Mostrar Ubicación Aleatoria
+            </button>
+        </div>
+        
+        <!-- Sección de URL Seleccionada -->
+        <div id="urlDisplayContainer" class="bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-700 hidden">
+            <p class="text-sm font-medium text-gray-300">URL seleccionada aleatoriamente:</p>
+            <p id="selectedUrl" class="text-cyan-400 font-mono text-xs mt-2 break-all bg-gray-900/50 p-2 rounded-md"></p>
+        </div>
+
+        <!-- Sección de Visualización -->
+        <div id="streetViewContainer" class="relative bg-gray-800 rounded-2xl shadow-lg w-full overflow-hidden h-[60vh] min-h-[450px] flex items-center justify-center transition-all border border-gray-700">
+             <div id="placeholder" class="w-full h-full flex items-center justify-center text-gray-500 text-center p-8">
+                <p>La ubicación aleatoria de Street View aparecerá aquí.</p>
+            </div>
+            <iframe id="streetViewFrame" class="hidden absolute left-0 w-full border-0 zoomed-view"
+                allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+        
+        <!-- Sección de control del nombre -->
+        <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-4 space-y-4 sm:space-y-0">
+            <button id="showNameButton" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500/50 shadow-lg w-full sm:w-auto">
+                Revelar Nombre
+            </button>
+            <div id="nameDisplay" class="bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-700 text-center w-full sm:w-auto hidden">
+                <p id="selectedRealName" class="text-lg font-semibold text-cyan-400"></p>
+            </div>
+        </div>
+
+        <!-- Historial de Ubicaciones -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold tracking-tight text-gray-300 mb-4">Historial de Ubicaciones</h2>
+            <ul id="historyList" class="space-y-4">
+                <!-- Los elementos del historial se insertarán aquí por JavaScript -->
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Almacena el nombre y la URL de la ubicación actual
+        let currentLocationRealName = '';
+        let currentLocationFantasyName = '';
+        let currentLocationUrl = '';
+        // Bandera para saber si la ubicación actual ya fue añadida al historial
+        let isCurrentLocationInHistory = false;
+        // Almacena el historial de ubicaciones
+        let locationHistory = [];
+        
+        // Listas de palabras y emojis para generar nombres de fantasía
+        const fantasyAdjectives = ['Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Esmeralda', 'Silencioso', 'Radiante', 'Misterioso', 'Glacial'];
+        const fantasyNouns = ['Valle', 'Bosque', 'Templo', 'Jardín', 'Pico', 'Ciudad', 'Mirador', 'Puerto', 'Río', 'Cráter', 'Choclo', 'Enchufe', 'Sobre', 'Celular'];
+        const emojis = ['✨', '🌌', '🌿', '🏰', '⛰️', '🏙️', '🔭', '⚓', '🌊', '❄️', '🌽', '🔌', '✉️', '📱'];
+
+        // Obtener elementos del DOM
+        const urlsTextarea = document.getElementById('urls');
+        const randomButton = document.getElementById('randomButton');
+        const streetViewFrame = document.getElementById('streetViewFrame');
+        const placeholder = document.getElementById('placeholder');
+        const streetViewContainer = document.getElementById('streetViewContainer');
+        const showNameButton = document.getElementById('showNameButton');
+        const nameDisplay = document.getElementById('nameDisplay');
+        const selectedRealNameElement = document.getElementById('selectedRealName');
+        const urlDisplayContainer = document.getElementById('urlDisplayContainer');
+        const selectedUrlElement = document.getElementById('selectedUrl');
+        const historyList = document.getElementById('historyList');
+
+        // Elementos para la funcionalidad de colapsar
+        const formHeader = document.getElementById('formHeader');
+        const formContent = document.getElementById('formContent');
+        const toggleArrow = document.getElementById('toggleArrow');
+        
+        // Escuchar el evento click del encabezado del formulario para colapsarlo
+        formHeader.addEventListener('click', () => {
+            formContent.classList.toggle('hidden');
+            toggleArrow.classList.toggle('rotate-180');
+        });
+
+        // Función para generar un nombre de fantasía consistente a partir de la URL
+        function getConsistentFantasyName(url) {
+            let hash = 0;
+            if (url.length === 0) return "Ubicación Sin Nombre ❓";
+            for (let i = 0; i < url.length; i++) {
+                const char = url.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash |= 0; // Convert to a 32bit integer
+            }
+            
+            const adjIndex = Math.abs(hash) % fantasyAdjectives.length;
+            const nounIndex = Math.abs(hash * 2) % fantasyNouns.length;
+            const emojiIndex = Math.abs(hash * 3) % emojis.length;
+            
+            return `${fantasyAdjectives[adjIndex]} ${fantasyNouns[nounIndex]} ${emojis[emojiIndex]}`;
+        }
+        
+        // Función para actualizar el historial en la interfaz
+        function updateHistoryDisplay() {
+            historyList.innerHTML = ''; // Limpia el historial actual
+            locationHistory.forEach(loc => {
+                const listItem = document.createElement('li');
+                listItem.className = 'bg-gray-800 p-4 rounded-xl shadow-md border border-gray-700 flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0';
+                listItem.innerHTML = `
+                    <div class="flex-1 space-y-1">
+                        <p class="text-sm font-semibold text-gray-300">
+                            <span class="text-lg font-bold text-cyan-400">${loc.fantasyName}</span>
+                            ${loc.realName ? ` (${loc.realName})` : ''}
+                        </p>
+                        <a href="${loc.url}" target="_blank" class="text-xs text-cyan-400 hover:underline break-all block">${loc.url}</a>
+                    </div>
+                    <button class="revisit-button bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400/50 shadow-md">
+                        Revisitar
+                    </button>
+                `;
+                historyList.appendChild(listItem);
+            });
+
+            // Agrega los event listeners a los nuevos botones
+            document.querySelectorAll('.revisit-button').forEach((button, index) => {
+                button.addEventListener('click', () => {
+                    revisitLocation(locationHistory[index]);
+                });
+            });
+        }
+        
+        // Función para revisitar una ubicación del historial
+        function revisitLocation(location) {
+            // Actualiza las variables de estado
+            currentLocationRealName = location.realName;
+            currentLocationFantasyName = location.fantasyName;
+            currentLocationUrl = location.url;
+            isCurrentLocationInHistory = true;
+
+            // Actualiza la interfaz del visor y la URL
+            placeholder.classList.add('hidden');
+            streetViewFrame.src = location.url;
+            streetViewFrame.classList.remove('hidden');
+            selectedUrlElement.innerHTML = `<span class="font-bold">${currentLocationFantasyName}</span> - ${currentLocationUrl}`;
+            urlDisplayContainer.classList.remove('hidden');
+
+            // Muestra el nombre real y ajusta el zoom
+            selectedRealNameElement.textContent = currentLocationRealName;
+            nameDisplay.classList.remove('hidden');
+            streetViewFrame.classList.remove('zoomed-view');
+            streetViewFrame.classList.add('unzoomed-view');
+        }
+
+        // Escuchar el evento click del botón "Mostrar Ubicación Aleatoria"
+        randomButton.addEventListener('click', () => {
+            // Reinicia la visibilidad del nombre anterior y el zoom
+            currentLocationRealName = '';
+            currentLocationFantasyName = '';
+            currentLocationUrl = '';
+            streetViewFrame.classList.add('zoomed-view');
+            streetViewFrame.classList.remove('unzoomed-view');
+            nameDisplay.classList.add('hidden'); // Oculta el nombre real al cambiar de ubicación
+            
+            // 1. Obtener el texto del textarea
+            const urlsInput = urlsTextarea.value;
+            
+            // 2. Separar por línea, limpiar, extraer de iframes y filtrar para entradas válidas
+            const locations = urlsInput.split('\n')
+                                 .map(line => {
+                                    // Divide la línea en URL y nombre
+                                    const parts = line.split(',');
+                                    let url = parts[0] ? parts[0].trim() : '';
+                                    const name = parts[1] ? parts.slice(1).join(',').trim() : 'Nombre no disponible';
+
+                                    // Si el usuario pega la etiqueta iframe completa, extraemos la URL del atributo src
+                                    if (url.startsWith('<iframe')) {
+                                        const srcMatch = url.match(/src="([^"]+)"/);
+                                        if (srcMatch && srcMatch[1]) {
+                                            url = srcMatch[1].replace(/&amp;/g, '&');
+                                        }
+                                    }
+                                    return { url, name };
+                                 })
+                                 .filter(loc => loc.url.includes('google.com/maps/embed'));
+
+            // 3. Validar si hay URLs
+            if (locations.length === 0) {
+                placeholder.textContent = "Por favor, ingresa al menos una URL de 'Insertar un mapa' válida en el formato correcto (URL, Nombre).";
+                placeholder.classList.remove('hidden');
+                streetViewFrame.classList.add('hidden');
+                urlDisplayContainer.classList.add('hidden');
+                nameDisplay.classList.add('hidden');
+                
+                streetViewContainer.classList.add('border-2', 'border-red-500');
+                setTimeout(() => streetViewContainer.classList.remove('border-2', 'border-red-500'), 2000);
+                return;
+            }
+
+            // 4. Seleccionar una ubicación al azar y generar un nombre de fantasía
+            const randomIndex = Math.floor(Math.random() * locations.length);
+            const randomLocation = locations[randomIndex];
+            const fantasyName = getConsistentFantasyName(randomLocation.url);
+
+            // 5. Almacena el nombre y la URL de la ubicación actual
+            currentLocationRealName = randomLocation.name;
+            currentLocationFantasyName = fantasyName;
+            currentLocationUrl = randomLocation.url;
+            // Reinicia la bandera para la nueva ubicación
+            isCurrentLocationInHistory = false;
+
+            // 6. Actualizar el iframe y la visibilidad de los elementos
+            placeholder.classList.add('hidden');
+            streetViewFrame.src = randomLocation.url;
+            streetViewFrame.classList.remove('hidden');
+
+            // 7. Mostrar la URL y el nombre seleccionados
+            selectedUrlElement.innerHTML = `<span class="font-bold">${currentLocationFantasyName}</span> - ${currentLocationUrl}`;
+            urlDisplayContainer.classList.remove('hidden');
+        });
+
+        // Escuchar el evento click del botón "Revelar Nombre"
+        showNameButton.addEventListener('click', () => {
+            if (currentLocationRealName) {
+                // Muestra el nombre real
+                selectedRealNameElement.textContent = currentLocationRealName;
+                nameDisplay.classList.remove('hidden');
+                
+                // Lanza el confeti
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                // Quita el zoom
+                streetViewFrame.classList.remove('zoomed-view');
+                streetViewFrame.classList.add('unzoomed-view');
+
+                // Añade la ubicación al historial y actualiza la interfaz solo si no ha sido añadida aún
+                if (!isCurrentLocationInHistory) {
+                    locationHistory.unshift({ 
+                        url: currentLocationUrl, 
+                        realName: currentLocationRealName, 
+                        fantasyName: currentLocationFantasyName
+                    });
+                    updateHistoryDisplay();
+                    isCurrentLocationInHistory = true; // Marca como añadida
+                }
+            }
+        });
+    </script>
+</body>
+</html>
