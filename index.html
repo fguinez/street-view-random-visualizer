@@ -23,6 +23,53 @@
             background-color: #4b5563; /* gray-600 */
             border-radius: 20px;
         }
+        /* Estilo para el toggle switch */
+        .toggle-switch-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4b5563; /* gray-600 */
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #ffffff;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2dd4bf; /* teal-400 */
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2dd4bf;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
 
         /* Clases para controlar el zoom del iframe */
         .zoomed-view {
@@ -69,6 +116,16 @@
                         <li>Pega cada uno en una nueva línea en el campo de arriba, seguido de una coma y un nombre.</li>
                     </ol>
                 </div>
+<!-- Toggle para evitar repeticiones -->
+<div class="flex items-center justify-between space-x-2 mt-4">
+    <label for="avoid-duplicates-toggle" class="text-gray-400 font-medium">Evitar repeticiones</label>
+    <div class="toggle-switch-container">
+        <label class="toggle-switch">
+            <input type="checkbox" id="avoid-duplicates-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
             </div>
             <button id="randomButton" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-cyan-500/50 shadow-lg mt-4">
                 Mostrar Ubicación Aleatoria
@@ -119,6 +176,8 @@
         let isCurrentLocationInHistory = false;
         // Almacena el historial de ubicaciones
         let locationHistory = [];
+                // Controla si se deben evitar ubicaciones repetidas
+                let avoidDuplicates = false;
         
         // Listas de palabras y emojis para generar nombres de fantasía
         const fantasyAdjectives = ['Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Esmeralda', 'Silencioso', 'Radiante', 'Misterioso', 'Glacial'];
@@ -137,6 +196,7 @@
         const urlDisplayContainer = document.getElementById('urlDisplayContainer');
         const selectedUrlElement = document.getElementById('selectedUrl');
         const historyList = document.getElementById('historyList');
+                const avoidDuplicatesToggle = document.getElementById('avoid-duplicates-toggle');
 
         // Elementos para la funcionalidad de colapsar
         const formHeader = document.getElementById('formHeader');
@@ -231,7 +291,7 @@
             const urlsInput = urlsTextarea.value;
             
             // 2. Separar por línea, limpiar, extraer de iframes y filtrar para entradas válidas
-            const locations = urlsInput.split('\n')
+            let locations = urlsInput.split('\n')
                                  .map(line => {
                                     // Divide la línea en URL y nombre
                                     const parts = line.split(',');
@@ -249,9 +309,15 @@
                                  })
                                  .filter(loc => loc.url.includes('google.com/maps/embed'));
 
-            // 3. Validar si hay URLs
+            // 3. Si el toggle está activado, filtra las ubicaciones que ya están en el historial
+            if (avoidDuplicates) {
+                const revealedUrls = locationHistory.map(loc => loc.url);
+                locations = locations.filter(loc => !revealedUrls.includes(loc.url));
+            }
+
+            // 4. Validar si hay URLs disponibles
             if (locations.length === 0) {
-                placeholder.textContent = "Por favor, ingresa al menos una URL de 'Insertar un mapa' válida en el formato correcto (URL, Nombre).";
+                placeholder.textContent = "¡Has explorado todas las ubicaciones! Desactiva 'Evitar repeticiones' o agrega nuevas ubicaciones.";
                 placeholder.classList.remove('hidden');
                 streetViewFrame.classList.add('hidden');
                 urlDisplayContainer.classList.add('hidden');
@@ -262,24 +328,24 @@
                 return;
             }
 
-            // 4. Seleccionar una ubicación al azar y generar un nombre de fantasía
+            // 5. Seleccionar una ubicación al azar y generar un nombre de fantasía
             const randomIndex = Math.floor(Math.random() * locations.length);
             const randomLocation = locations[randomIndex];
             const fantasyName = getConsistentFantasyName(randomLocation.url);
 
-            // 5. Almacena el nombre y la URL de la ubicación actual
+            // 6. Almacena el nombre y la URL de la ubicación actual
             currentLocationRealName = randomLocation.name;
             currentLocationFantasyName = fantasyName;
             currentLocationUrl = randomLocation.url;
             // Reinicia la bandera para la nueva ubicación
             isCurrentLocationInHistory = false;
 
-            // 6. Actualizar el iframe y la visibilidad de los elementos
+            // 7. Actualizar el iframe y la visibilidad de los elementos
             placeholder.classList.add('hidden');
             streetViewFrame.src = randomLocation.url;
             streetViewFrame.classList.remove('hidden');
 
-            // 7. Mostrar la URL y el nombre seleccionados
+            // 8. Mostrar la URL y el nombre seleccionados
             selectedUrlElement.innerHTML = `<span class="font-bold">${currentLocationFantasyName}</span> - ${currentLocationUrl}`;
             urlDisplayContainer.classList.remove('hidden');
         });
@@ -313,6 +379,10 @@
                     isCurrentLocationInHistory = true; // Marca como añadida
                 }
             }
+        });
+    // Escuchar el evento de cambio del toggle
+    avoidDuplicatesToggle.addEventListener('change', (event) => {
+        avoidDuplicates = event.target.checked;
         });
     </script>
 </body>
