@@ -1,0 +1,83 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Estilo personalizado para la barra de desplazamiento en el área de texto */
+textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #1f2937; /* gray-800 */
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* gray-600 */
+    border-radius: 20px;
+}
+
+/* Estilo para el toggle switch */
+.toggle-switch-container {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4b5563; /* gray-600 */
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #ffffff;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2dd4bf; /* teal-400 */
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2dd4bf;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Clases para controlar el zoom del iframe */
+.zoomed-view {
+    top: -60px;
+    height: calc(100% + 60px);
+}
+
+.unzoomed-view {
+    top: 0;
+    height: 100%;
+}
