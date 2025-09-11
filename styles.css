@@ -81,3 +81,22 @@ input:checked + .slider:before {
     top: 0;
     height: 100%;
 }
+
+/* Animaciones para la sección de ajustes */
+.form-content-container {
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    max-height: 0;
+    opacity: 0;
+}
+
+.form-content-container.expanded {
+    max-height: 1000px;
+    /* Valor suficientemente grande para acomodar el contenido */
+    opacity: 1;
+}
+
+.form-content-container.collapsed {
+    max-height: 0;
+    opacity: 0;
+}

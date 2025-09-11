@@ -45,6 +45,7 @@ class StreetViewApp {
             urlDisplayContainer: document.getElementById('urlDisplayContainer'),
             selectedUrlElement: document.getElementById('selectedUrl'),
             historyList: document.getElementById('historyList'),
+            historySection: document.getElementById('historySection'),
             fullscreenButton: document.getElementById('fullscreenButton'),
             avoidDuplicatesToggle: document.getElementById('avoid-duplicates-toggle'),
             formHeader: document.getElementById('formHeader'),
@@ -54,10 +55,9 @@ class StreetViewApp {
     }
 
     attachEventListeners() {
-        // Form collapse functionality
+        // Form collapse functionality with animation
         this.elements.formHeader.addEventListener('click', () => {
-            this.elements.formContent.classList.toggle('hidden');
-            this.elements.toggleArrow.classList.toggle('rotate-180');
+            this.toggleFormContent();
         });
 
         // Main functionality
@@ -70,6 +70,22 @@ class StreetViewApp {
 
         // Fullscreen change detection
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+    }
+
+    toggleFormContent() {
+        const isCollapsed = this.elements.formContent.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            this.elements.formContent.classList.remove('collapsed');
+            this.elements.formContent.classList.add('expanded');
+            this.elements.toggleArrow.classList.remove('rotate-180');
+        } else {
+            // Collapse
+            this.elements.formContent.classList.remove('expanded');
+            this.elements.formContent.classList.add('collapsed');
+            this.elements.toggleArrow.classList.add('rotate-180');
+        }
     }
 
     generateConsistentFantasyName(url) {
@@ -210,6 +226,14 @@ class StreetViewApp {
 
     updateHistoryDisplay() {
         this.elements.historyList.innerHTML = '';
+        
+        // Show/hide history section based on whether there are locations
+        if (this.locationHistory.length > 0) {
+            this.elements.historySection.classList.remove('hidden');
+        } else {
+            this.elements.historySection.classList.add('hidden');
+            return;
+        }
         
         this.locationHistory.forEach((loc, index) => {
             const listItem = document.createElement('li');
