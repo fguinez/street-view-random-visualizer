@@ -12,19 +12,25 @@ class StreetViewApp {
 
         // Fantasy name generation data
         this.fantasyAdjectives = [
-            'Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Esmeralda', 
-            'Silencioso', 'Radiante', 'Misterioso', 'Glacial', 'Fantástico', 
+            'Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Misterioso',
+            'Silencioso', 'Radiante', 'Espectacular', 'Fantástico', 'Imponente',
             'Celestial', 'Galáctico', 'Etereo', 'Brillante', 'Oculto', 'Lejano', 
-            'Increíble', 'Sublime', 'Épico', 'Inolvidable'
+            'Increíble', 'Sublime', 'Épico', 'Inolvidable', 'Bello', 'Dulce',
+            'Magnífico', 'Bonito', 'Majestuoso', 'Divino', 'Espléndido', 'Gran',
+            'Hermoso', 'Maravilloso', 'Icónico', 'Precioso', 'Inmenso',
+            'Acogedor',
         ];
         this.fantasyNouns = [
             'Valle', 'Bosque', 'Templo', 'Jardín', 'Cerro', 'Ciudad', 'Mirador', 
-            'Puerto', 'Río', 'Cráter', 'Choclo', 'Enchufe', 'Sobre', 'Celular', 
-            'Castillo', 'Laberinto', 'Desierto', 'Cascada', 'Glaciar', 'Pantano'
+            'Puerto', 'Río', 'Cráter', 'Choclo', 'Enchufe', 'Celular', 'Parque',
+            'Castillo', 'Laberinto', 'Desierto', 'Glaciar', 'Lugar', 'Paisaje',
+            'Pantano', 'Camino', 'Volcán', 'Lago', 'Playa', 'Montaña', 'Pueblo',
+            'Callejón', 'Sendero', 'Árbol', 'Cielo', 'Mar',
         ];
         this.emojis = [
-            '✨', '🌌', '🌿', '🏰', '⛰️', '🏙️', '🔭', '🏝️', '🌊', '❄️', 
-            '🌽', '🔌', '✉️', '📱', '🦄', '🌈', '🔮', '🗺️', '💎', '🔑'
+            '✨', '🌌', '🌿', '🏰', '⛰️', '🏙️', '🔭', '🏝️', '🌊', '❄️', '🌋', '✈',
+            '🌽', '🔌', '✉️', '📱', '🦄', '🌈', '🔮', '🗺️', '💎', '🔑', '🌵', '🚂',
+            '🎨', '🌳', '🤩', '🤯', '📸', '🌟', '🌎',
         ];
 
         this.initializeElements();
