@@ -144,8 +144,17 @@
                 <p>La ubicación aleatoria de Street View aparecerá aquí.</p>
             </div>
             <iframe id="streetViewFrame" class="hidden absolute left-0 w-full border-0 zoomed-view"
-                allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Google Street View">
             </iframe>
+            <!-- Botón de pantalla completa en la esquina -->
+            <button id="fullscreenButton"
+                class="absolute top-4 right-4 bg-gray-800/80 hover:bg-gray-700/80 text-white p-2 rounded-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 shadow-lg backdrop-blur-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+            </button>
         </div>
         
         <!-- Sección de control del nombre -->
@@ -157,7 +166,7 @@
                 <p id="selectedRealName" class="text-lg font-semibold text-cyan-400"></p>
             </div>
         </div>
-
+        
         <!-- Historial de Ubicaciones -->
         <div class="mt-8">
             <h2 class="text-2xl font-bold tracking-tight text-gray-300 mb-4">Historial de Ubicaciones</h2>
@@ -180,9 +189,9 @@
                 let avoidDuplicates = false;
         
         // Listas de palabras y emojis para generar nombres de fantasía
-        const fantasyAdjectives = ['Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Esmeralda', 'Silencioso', 'Radiante', 'Misterioso', 'Glacial'];
-        const fantasyNouns = ['Valle', 'Bosque', 'Templo', 'Jardín', 'Pico', 'Ciudad', 'Mirador', 'Puerto', 'Río', 'Cráter', 'Choclo', 'Enchufe', 'Sobre', 'Celular'];
-        const emojis = ['✨', '🌌', '🌿', '🏰', '⛰️', '🏙️', '🔭', '⚓', '🌊', '❄️', '🌽', '🔌', '✉️', '📱'];
+                                const fantasyAdjectives = ['Mágico', 'Estelar', 'Antiguo', 'Secreto', 'Cósmico', 'Esmeralda', 'Silencioso', 'Radiante', 'Misterioso', 'Glacial', 'Fantástico', 'Celestial', 'Galáctico', 'Etereo', 'Brillante', 'Oculto', 'Lejano', 'Increíble', 'Sublime', 'Épico', 'Inolvidable'];
+                                const fantasyNouns = ['Valle', 'Bosque', 'Templo', 'Jardín', 'Cerro', 'Ciudad', 'Mirador', 'Puerto', 'Río', 'Cráter', 'Choclo', 'Enchufe', 'Sobre', 'Celular', 'Castillo', 'Laberinto', 'Desierto', 'Cascada', 'Glaciar', 'Pantano'];
+                                const emojis = ['✨', '🌌', '🌿', '🏰', '⛰️', '🏙️', '🔭', '🏝️', '🌊', '❄️', '🌽', '🔌', '✉️', '📱', '🦄', '🌈', '🔮', '🗺️', '💎', '🔑'];
 
         // Obtener elementos del DOM
         const urlsTextarea = document.getElementById('urls');
@@ -196,6 +205,7 @@
         const urlDisplayContainer = document.getElementById('urlDisplayContainer');
         const selectedUrlElement = document.getElementById('selectedUrl');
         const historyList = document.getElementById('historyList');
+                                    const fullscreenButton = document.getElementById('fullscreenButton');
                 const avoidDuplicatesToggle = document.getElementById('avoid-duplicates-toggle');
 
         // Elementos para la funcionalidad de colapsar
@@ -380,10 +390,31 @@
                 }
             }
         });
+
+    // Escuchar el evento click del botón "Pantalla Completa"
+    fullscreenButton.addEventListener('click', () => {
+        if (streetViewContainer.requestFullscreen) {
+            streetViewContainer.requestFullscreen();
+        } else {
+            console.error("Tu navegador no soporta la API de Pantalla Completa.");
+        }
+    });
+
+    // Escuchar eventos de cambio de pantalla completa
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            // Entró en pantalla completa - ocultar botón
+            fullscreenButton.classList.add('hidden');
+        } else {
+            // Salió de pantalla completa - mostrar botón
+            fullscreenButton.classList.remove('hidden');
+        }
+    });
+
     // Escuchar el evento de cambio del toggle
     avoidDuplicatesToggle.addEventListener('change', (event) => {
         avoidDuplicates = event.target.checked;
-        });
+    });
     </script>
 </body>
 </html>
