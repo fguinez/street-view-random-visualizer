@@ -150,12 +150,44 @@ class StreetViewApp {
             return;
         }
 
-        const randomIndex = Math.floor(Math.random() * locations.length);
-        const randomLocation = locations[randomIndex];
+        // Group locations by name and calculate probabilities
+        const locationGroups = this.groupLocationsByName(locations);
+        const selectedGroup = this.selectLocationGroupByProbability(locationGroups);
+        const randomLocation = this.selectRandomLocationFromGroup(selectedGroup);
         const fantasyName = this.generateConsistentFantasyName(randomLocation.url);
 
         this.setCurrentLocation(randomLocation, fantasyName);
         this.displayLocation();
+    }
+
+    groupLocationsByName(locations) {
+        const groups = {};
+        
+        locations.forEach(location => {
+            const name = location.name;
+            if (!groups[name]) {
+                groups[name] = [];
+            }
+            groups[name].push(location);
+        });
+        
+        return groups;
+    }
+
+    selectLocationGroupByProbability(locationGroups) {
+        const uniqueNames = Object.keys(locationGroups);
+        const randomIndex = Math.floor(Math.random() * uniqueNames.length);
+        const selectedName = uniqueNames[randomIndex];
+        
+        return {
+            name: selectedName,
+            locations: locationGroups[selectedName]
+        };
+    }
+
+    selectRandomLocationFromGroup(group) {
+        const randomIndex = Math.floor(Math.random() * group.locations.length);
+        return group.locations[randomIndex];
     }
 
     resetLocationState() {
